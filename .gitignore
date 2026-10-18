@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs
+*.log
+
+# Build & Runtime
+dist/
+build/
+.output/
+.vercel/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+
+# See https://help.github.com/articles/ignoring-files/ for more عنها
+
+# Dependencies / packages
+/node_modules
+/.pnp
+.pnp.js
+
+# Testing/Coverage
+/coverage
+
+# Next.js build output
+/.next/
+/out/
+
+# Production builds
+/build
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Local environment files
+.env*.local
+.env
