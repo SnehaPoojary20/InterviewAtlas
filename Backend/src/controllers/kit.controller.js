@@ -3,7 +3,7 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { runFullPipeline } from '../services/pipeline.service.js';
 
-export const createKit = async (req, res, next) => {
+const createKit = async (req, res, next) => {
   try {
     const { jd, company_url, days } = req.body;
 
@@ -31,7 +31,9 @@ export const createKit = async (req, res, next) => {
   }
 };
 
-export const getUserKits = async (req, res, next) => {
+
+
+const getUserKits = async (req, res, next) => {
   try {
     const kits = await Kit.find({ userId: req.user._id }).sort({ createdAt: -1 });
     return res.status(200).json(new ApiResponse(200, kits, 'User kits fetched successfully'));
@@ -40,7 +42,9 @@ export const getUserKits = async (req, res, next) => {
   }
 };
 
-export const getKitById = async (req, res, next) => {
+
+
+const getKitById = async (req, res, next) => {
   try {
     const { id } = req.params;
     const kit = await Kit.findOne({ _id: id, userId: req.user._id });
@@ -55,7 +59,9 @@ export const getKitById = async (req, res, next) => {
   }
 };
 
-export const updateKit = async (req, res, next) => {
+
+
+const updateKit = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { kitData } = req.body;
@@ -74,7 +80,9 @@ export const updateKit = async (req, res, next) => {
   }
 };
 
-export const deleteKit = async (req, res, next) => {
+
+
+const deleteKit = async (req, res, next) => {
   try {
     const { id } = req.params;
     const kit = await Kit.findOneAndDelete({ _id: id, userId: req.user._id });
@@ -88,3 +96,5 @@ export const deleteKit = async (req, res, next) => {
     next(error);
   }
 };
+
+export{createKit,getUserKits,getKitById,updateKit,deleteKit};
