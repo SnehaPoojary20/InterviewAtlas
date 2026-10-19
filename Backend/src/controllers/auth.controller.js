@@ -5,27 +5,27 @@ import jwt from 'jsonwebtoken';
 
 
 
-const registerUser = async (req,res,next)=>{
-
+const registerUser = async (req, res, next) => {
     try {
-        const{email,password} =req.body;
+        const { email, password } = req.body;
 
-        if(!email || !password){
+        if (!email || !password) {
             throw new ApiError(400, 'Email and password are required');
         }
 
-       const existingUser = await User.find({email});
+        
+        const existingUser = await User.findOne({ email });
 
-       if(existingUser){
-         throw new ApiError(409, 'User with this email already exists');
-       }
+        if (existingUser) {
+            throw new ApiError(409, 'User with this email already exists');
+        }
 
-       const user = await User.create ({ email, password });
-       const createdUser = await User.findById(user._id).select('-password');
+        const user = await User.create({ email, password });
+        const createdUser = await User.findById(user._id).select('-password');
 
-       return res
-       .status(201)
-       .json(new ApiResponse(201, createdUser, 'User registered successfully'));
+        return res
+            .status(201)
+            .json(new ApiResponse(201, createdUser, 'User registered successfully'));
 
     } catch (error) {
         next(error);

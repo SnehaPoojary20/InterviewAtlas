@@ -1,32 +1,34 @@
-import mongoose,{Schema} from mongoose;
-import bycrypt from 'bycryptjs';
+import mongoose, { Schema } from 'mongoose';
+import bcrypt from 'bcryptjs';
 
-const userSchema= new Schema(
-    {
-        email:{
-            type:String,
-            required:true,
-            unique:true,
-            lowercase:true,
-            trim:true
-        },
-
-        password:{
-            type:String,
-            required:[true,"Password is required"],
-        },
+const userSchema = new Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
     },
-    {timeStamps:true}
-)
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+    },
+  },
+  { timestamps: true } 
+);
 
-//Hash password before saving it
-userSchema.pre('save',async function (next){
-
-    if(! this.isModified('password')) return next();
-
-    this.password= this.password.bycrypt(this.password,10);
-
-    next();
+// Hash password before saving it
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  
+ 
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
 });
+
+userSchema.methods.isPasswordCorrect = async function (password) {
+  return await bcrypt.compare(password, this.password);
+};
 
 export const User = mongoose.model('User', userSchema);
