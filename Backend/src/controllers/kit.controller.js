@@ -27,22 +27,32 @@ const createKit = async (req, res, next) => {
 
     return res.status(201).json(new ApiResponse(201, newKit, 'Interview prep kit generated successfully'));
   } catch (error) {
-    next(error);
+    console.error("CREATE KIT ERROR:", error);
+    if (typeof next === 'function') {
+      return next(error);
+    }
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Internal Server Error',
+    });
   }
 };
-
-
 
 const getUserKits = async (req, res, next) => {
   try {
     const kits = await Kit.find({ userId: req.user._id }).sort({ createdAt: -1 });
     return res.status(200).json(new ApiResponse(200, kits, 'User kits fetched successfully'));
   } catch (error) {
-    next(error);
+    console.error("GET USER KITS ERROR:", error);
+    if (typeof next === 'function') {
+      return next(error);
+    }
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Internal Server Error',
+    });
   }
 };
-
-
 
 const getKitById = async (req, res, next) => {
   try {
@@ -55,11 +65,16 @@ const getKitById = async (req, res, next) => {
 
     return res.status(200).json(new ApiResponse(200, kit, 'Kit fetched successfully'));
   } catch (error) {
-    next(error);
+    console.error("GET KIT BY ID ERROR:", error);
+    if (typeof next === 'function') {
+      return next(error);
+    }
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Internal Server Error',
+    });
   }
 };
-
-
 
 const updateKit = async (req, res, next) => {
   try {
@@ -76,11 +91,16 @@ const updateKit = async (req, res, next) => {
 
     return res.status(200).json(new ApiResponse(200, kit, 'Kit updated successfully'));
   } catch (error) {
-    next(error);
+    console.error("UPDATE KIT ERROR:", error);
+    if (typeof next === 'function') {
+      return next(error);
+    }
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Internal Server Error',
+    });
   }
 };
-
-
 
 const deleteKit = async (req, res, next) => {
   try {
@@ -93,8 +113,15 @@ const deleteKit = async (req, res, next) => {
 
     return res.status(200).json(new ApiResponse(200, {}, 'Kit deleted successfully'));
   } catch (error) {
-    next(error);
+    console.error("DELETE KIT ERROR:", error);
+    if (typeof next === 'function') {
+      return next(error);
+    }
+    return res.status(error.statusCode || 500).json({
+      success: false,
+      message: error.message || 'Internal Server Error',
+    });
   }
 };
 
-export{createKit,getUserKits,getKitById,updateKit,deleteKit};
+export { createKit, getUserKits, getKitById, updateKit, deleteKit };
