@@ -16,10 +16,17 @@ export default function Login() {
         setLoading(true);
 
         try {
-            await apiFetch('/auth/login', {
+            const data = await apiFetch('/auth/login', {
                 method: 'POST',
                 body: JSON.stringify({ email, password }),
             });
+
+            // Save JWT token from response data to localStorage for authorization
+            const token = data.data?.token || data.token;
+            if (token) {
+                localStorage.setItem('token', token);
+            }
+
             // Set auth flag for Navbar
             localStorage.setItem('isAuthenticated', 'true');
             navigate('/dashboard');
