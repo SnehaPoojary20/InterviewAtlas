@@ -1,124 +1,298 @@
-import axios from 'axios';
-import * as cheerio from 'cheerio';
-import { url } from 'inspector';
-import {URL} from 'url';
 
+import axios from "axios";
+import * as cheerio from "cheerio";
 
-export async function crawlCompanySite(baseUrl){
+// --------------------------------------------------
+// Configuration
+// --------------------------------------------------
 
-    const visitedPages = new Set();
-    const pagesData=[];
-    const maxPages=4; //limit crawl dept/breadth for speed and free tier limits
+const REQUEST_TIMEOUT = 10000;
+const MAX_PAGES = 5;
+const MAX_TEXT_PER_PAGE = 12000;
+const MAX_TOTAL_TEXT = 40000;
 
-    try{
-        // Validate URL security (prevent loopback/private IP hits in production)
-        const parsedUrl= new URL(baseUrl);
+const USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+  "AppleWebKit/537.36 (KHTML, like Gecko) " +
+  "Chrome/131.0.0.0 Safari/537.36";
 
-        if(!['http:','https:'].includes(parsedUrl.protocol)){
-            throw new Error('Invalid URL Protocol');
-        }
-
-        // Step 1: Fetch root page
-        const rootHTML = await fetchPageWithTimeout(baseUrl);
-
-        if(! rootHTML)
-            return{
-            pageUsed:[],
-            textContent:''
-        };
-
-        visitedPages.add(baseUrl);
-        pagesData.push({ url: baseUrl, html: rootHtml });
-
-        // Step 2: Parse and discover links(careers, jobs, about, culture, blog)
-
-        const cheerio = cheerio.load(rootHTML);
-        const discoveredLinks=[];
-
-        $('a').each((_, element) => {
-
-           const href = $(element).attr('href');
-
-           if(href){
-
-                  try {
-                   const absoluteUrl= new URL(href,baseUrl).toString();
-                   // Keep only links within the same domain
-
-                   if (absoluteUrl.startsWith(baseUrl) && !visitedPages.has(absoluteUrl)) {
-                        discoveredLinks.push(absoluteUrl);
-                   }
-
-                  } catch (error) {
-                    // ignore invalid relative/absolute URL parsing
-                  }
-           }
-        });
-
-       //Step 3:Rank links based on keywords
-       const scoredLinks = discoveredLinks.map(link => {
-      let score = 0;
-      const lower = link.toLowerCase();
-      if (lower.includes('career') || lower.includes('job') || lower.includes('hiring')) score += 10;
-      if (lower.includes('about') || lower.includes('culture')) score += 5;
-      if (lower.includes('blog') || lower.includes('engineering')) score += 3;
-      return { link, score };
-    });
-
-    scoredLinks.sort((a, b) => b.score - a.score);
-
-    // Step 4: Fetch top ranked candidate pages
-    const topLinks = scoredLinks.slice(0, maxPages - 1).map(item => item.link);
-    for (const link of topLinks) {
-      if (visitedPages.size >= maxPages) break;
-      try {
-        const html = await fetchPageWithTimeout(link);
-        if (html) {
-          visitedPages.add(link);
-          pagesData.push({ url: link, html });
-        }
-      } catch (err) {
-        // Skip failed secondary pages gracefully
-      }
-    }
-
-    //  Step 5: Clean and aggregate text content from all fetched pages
-    let combinedText = '';
-    const pagesUsed = Array.from(visitedPages);
-
-    pagesData.forEach(page => {
-      const $page = cheerio.load(page.html);
-      // Remove scripts, styles, navbars, footers to reduce noise and token usage
-      $page('script, style, nav, footer, header').remove();
-      const text = $page('body').text().replace(/\s+/g, ' ').trim();
-      combinedText += `\n--- SOURCE PAGE: ${page.url} ---\n${text.slice(0, 3000)}`;
-    });
-
-    return {
-      pagesUsed,
-      textContent: combinedText
-    };
-
-  } catch (error) {
-    console.warn(`Crawling warning for ${baseUrl}: ${error.message}`);
-    // Return empty state rather than failing the entire pipeline (per Section 2 & 10)
-    return { pagesUsed: [], textContent: '' };
-  }
-}
+// --------------------------------------------------
+// 1. Fetch a webpage safely
+// --------------------------------------------------
 
 async function fetchPageWithTimeout(url) {
   try {
     const response = await axios.get(url, {
-      timeout: 5000,
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) TraoPrepBot/1.0' },
-      maxRedirects: 3
+      timeout: REQUEST_TIMEOUT,
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "text/html,application/xhtml+xml",
+      },
+      maxRedirects: 5,
+      responseType: "text",
+      validateStatus: (status) => status >= 200 && status < 300,
     });
+
+    const contentType = String(
+      response.headers["content-type"] || ""
+    ).toLowerCase();
+
+    if (
+      contentType &&
+      !contentType.includes("text/html") &&
+      !contentType.includes("application/xhtml+xml")
+    ) {
+      console.warn(`Skipping non-HTML page: ${url}`);
+      return null;
+    }
+
+    if (typeof response.data !== "string") {
+      console.warn(`Unexpected response content: ${url}`);
+      return null;
+    }
+
     return response.data;
-    
   } catch (error) {
-    return null; // Return null on timeout, 404, or blocked requests
+    const reason =
+      error.response?.status
+        ? `HTTP ${error.response.status}`
+        : error.code || error.message;
+
+    console.warn(`Failed to fetch ${url}: ${reason}`);
+    return null;
   }
 }
+
+// --------------------------------------------------
+// 2. Validate and normalize the website URL
+// --------------------------------------------------
+
+function normalizeBaseUrl(input) {
+  if (typeof input !== "string" || !input.trim()) {
+    throw new Error("A valid company URL is required.");
+  }
+
+  let parsed;
+
+  try {
+    parsed = new URL(input.trim());
+  } catch {
+    throw new Error(`Invalid company URL: ${input}`);
+  }
+
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("Company URL must use HTTP or HTTPS.");
+  }
+
+  if (parsed.username || parsed.password) {
+    throw new Error("Company URL must not contain embedded credentials.");
+  }
+
+  parsed.hash = "";
+
+  return parsed;
+}
+
+// --------------------------------------------------
+// 3. Extract readable text from HTML
+// --------------------------------------------------
+
+function extractText(html) {
+  const $ = cheerio.load(html);
+
+  // Remove elements that rarely contain useful company information.
+  $(
+    "script, style, noscript, iframe, svg, canvas, " +
+    "nav, footer, header, form, button, input, " +
+    "[aria-hidden='true']"
+  ).remove();
+
+  const text = $("body").text() || $.root().text();
+
+  return text
+    .replace(/\u00a0/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\r/g, "")
+    .replace(/\n\s*\n+/g, "\n")
+    .trim()
+    .slice(0, MAX_TEXT_PER_PAGE);
+}
+
+// --------------------------------------------------
+// 4. Discover same-host HTML links
+// --------------------------------------------------
+
+function discoverLinks(html, currentUrl, allowedHostname) {
+  const $ = cheerio.load(html);
+  const links = new Set();
+
+  $("a[href]").each((_, element) => {
+    const href = $(element).attr("href");
+
+    if (!href) return;
+
+    const trimmedHref = href.trim();
+
+    // Skip anchors, scripts, emails, phone numbers, and other non-page links.
+    if (
+      !trimmedHref ||
+      trimmedHref.startsWith("#") ||
+      /^(javascript:|mailto:|tel:|data:)/i.test(trimmedHref)
+    ) {
+      return;
+    }
+
+    try {
+      const absoluteUrl = new URL(trimmedHref, currentUrl);
+
+      if (!["http:", "https:"].includes(absoluteUrl.protocol)) {
+        return;
+      }
+
+      // Restrict crawling to the original hostname.
+      if (absoluteUrl.hostname !== allowedHostname) {
+        return;
+      }
+
+      // Skip likely assets and documents.
+      if (
+        /\.(pdf|png|jpe?g|gif|svg|webp|ico|css|js|zip|xml|json|mp4|mp3)(?:$|[?#])/i.test(
+          absoluteUrl.pathname
+        )
+      ) {
+        return;
+      }
+
+      absoluteUrl.hash = "";
+
+      // Remove common tracking parameters.
+      for (const key of [...absoluteUrl.searchParams.keys()]) {
+        if (
+          key.startsWith("utm_") ||
+          ["gclid", "fbclid"].includes(key.toLowerCase())
+        ) {
+          absoluteUrl.searchParams.delete(key);
+        }
+      }
+
+      // Avoid duplicate URLs caused by trailing slashes.
+      if (absoluteUrl.pathname.length > 1) {
+        absoluteUrl.pathname = absoluteUrl.pathname.replace(/\/+$/, "");
+      }
+
+      links.add(absoluteUrl.href);
+    } catch {
+      // Ignore malformed links.
+    }
+  });
+
+  return [...links];
+}
+
+// --------------------------------------------------
+// 5. Crawl the company website
+// --------------------------------------------------
+
+export async function crawlCompanySite(companyUrl) {
+  let baseUrl;
+
+  try {
+    baseUrl = normalizeBaseUrl(companyUrl);
+  } catch (error) {
+    console.warn(`Crawler configuration error: ${error.message}`);
+
+    return {
+      pagesUsed: [],
+      textContent: "",
+    };
+  }
+
+  const pagesUsed = [];
+  const visited = new Set();
+  const queued = new Set();
+
+  const queue = [baseUrl.href];
+  queued.add(baseUrl.href);
+
+  const textParts = [];
+  let totalTextLength = 0;
+
+  while (
+    queue.length > 0 &&
+    pagesUsed.length < MAX_PAGES &&
+    totalTextLength < MAX_TOTAL_TEXT
+  ) {
+    const currentUrl = queue.shift();
+
+    if (!currentUrl || visited.has(currentUrl)) {
+      continue;
+    }
+
+    visited.add(currentUrl);
+
+    console.log(`Crawling: ${currentUrl}`);
+
+    const html = await fetchPageWithTimeout(currentUrl);
+
+    if (!html) {
+      continue;
+    }
+
+    // Follow redirects only when they remain on the original hostname.
+    // axios exposes the final URL through response.request.res.responseUrl,
+    // but fetchPageWithTimeout returns only HTML. The original requested URL
+    // is therefore recorded here.
+    const pageText = extractText(html);
+
+    if (!pageText) {
+      continue;
+    }
+
+    pagesUsed.push(currentUrl);
+
+    const remainingText = MAX_TOTAL_TEXT - totalTextLength;
+    const limitedText = pageText.slice(0, remainingText);
+
+    textParts.push(`SOURCE: ${currentUrl}\n${limitedText}`);
+    totalTextLength += limitedText.length;
+
+    // Discover additional pages only while capacity remains.
+    if (
+      pagesUsed.length < MAX_PAGES &&
+      totalTextLength < MAX_TOTAL_TEXT
+    ) {
+      const links = discoverLinks(
+        html,
+        currentUrl,
+        baseUrl.hostname
+      );
+
+      for (const link of links) {
+        if (
+          !visited.has(link) &&
+          !queued.has(link) &&
+          queue.length + pagesUsed.length < MAX_PAGES * 3
+        ) {
+          queue.push(link);
+          queued.add(link);
+        }
+      }
+    }
+  }
+
+  const textContent = textParts.join("\n\n").slice(0, MAX_TOTAL_TEXT);
+
+  console.log(
+    `Crawl completed: ${pagesUsed.length} page(s), ` +
+    `${textContent.length} characters extracted.`
+  );
+
+  return {
+    pagesUsed,
+    textContent,
+  };
+}
+
 
 
     

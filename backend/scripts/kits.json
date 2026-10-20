@@ -1,0 +1,657 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-10-20T11:07:42.161Z",
+  "kits": [
+    {
+      "id": "case-1",
+      "status": "ok",
+      "kit": {
+        "source": {
+          "company": "mongodb",
+          "company_url": "https://www.mongodb.com/",
+          "role": "Software Engineer",
+          "location": "Not specified",
+          "jd_chars": 382,
+          "researched_at": "2026-10-20T11:06:57.870Z",
+          "pages_used": [
+            "https://www.mongodb.com/",
+            "https://www.mongodb.com/company/blog/product-release-announcements/ai-demand-constant-unpredictable-extreme-mongodb-is-built-for-it",
+            "https://www.mongodb.com/products/platform",
+            "https://www.mongodb.com/products/platform/atlas-database",
+            "https://www.mongodb.com/products/platform/atlas-search"
+          ]
+        },
+        "company_brief": {
+          "summary": "MongoDB delivers a multi‑cloud, intelligent data platform that supports operational, vector, and AI workloads, offering services such as Atlas, vector search, stream processing, and integrated analytics.",
+          "what_they_do": "They develop and operate MongoDB Atlas, a cloud database service, and related tools that enable developers to build scalable, AI‑enabled applications across any cloud or on‑premises infrastructure.",
+          "sources": [
+            "https://www.mongodb.com/",
+            "https://www.mongodb.com/company/blog/product-release-announcements/ai-demand-constant-unpredictable-extreme-mongodb-is-built-for-it",
+            "https://www.mongodb.com/products/platform",
+            "https://www.mongodb.com/products/platform/atlas-database",
+            "https://www.mongodb.com/products/platform/atlas-search"
+          ]
+        },
+        "role": {
+          "sources": [
+            "https://www.mongodb.com/",
+            "https://www.mongodb.com/company/blog/product-release-announcements/ai-demand-constant-unpredictable-extreme-mongodb-is-built-for-it",
+            "https://www.mongodb.com/products/platform",
+            "https://www.mongodb.com/products/platform/atlas-database",
+            "https://www.mongodb.com/products/platform/atlas-search"
+          ],
+          "title": "Software Engineer",
+          "seniority": "Not specified",
+          "responsibilities": [
+            "Develop backend APIs using Node.js and Express.js",
+            "Design and implement MongoDB and SQL database schemas",
+            "Write clean, maintainable JavaScript code",
+            "Debug and fix bugs in backend services",
+            "Write tests for REST endpoints",
+            "Collaborate with frontend engineers to integrate APIs"
+          ],
+          "requirements": [
+            {
+              "id": "REQ-1",
+              "text": "Proficient in modern JavaScript (ES6+) for backend development",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-2",
+              "text": "Experience building RESTful APIs with Node.js and Express.js",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-3",
+              "text": "Ability to design MongoDB schemas and write efficient queries",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-4",
+              "text": "Familiarity with relational databases and SQL querying",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-5",
+              "text": "Implement authentication and authorization mechanisms in APIs",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-6",
+              "text": "Strong understanding of data structures and algorithms for problem solving",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-7",
+              "text": "Proficient debugging skills and ability to write unit/integration tests for endpoints",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-8",
+              "text": "Effective collaboration with frontend engineers",
+              "kind": "behavioural",
+              "priority": "must"
+            }
+          ]
+        },
+        "questions": [
+          {
+            "id": "Q-1",
+            "requirement_ids": [
+              "REQ-1"
+            ],
+            "category": "technical",
+            "prompt": "Explain the difference between var, let, and const in JavaScript and when you would use each.",
+            "answer_outline": "var is function scoped and hoisted; let is block scoped; const is block scoped and immutable binding. Use let for mutable block‑scoped variables, const for values that never reassign, var only for legacy code.",
+            "difficulty": 1,
+            "isCustom": false
+          },
+          {
+            "id": "Q-2",
+            "requirement_ids": [
+              "REQ-2"
+            ],
+            "category": "technical",
+            "prompt": "Design a simple Express.js route for creating a new user, including input validation and error handling.",
+            "answer_outline": "Show route definition, use body‑parser, validate required fields, call service layer, handle async errors with try/catch or next(err), return 201 on success.",
+            "difficulty": 2,
+            "isCustom": false
+          },
+          {
+            "id": "Q-3",
+            "requirement_ids": [
+              "REQ-3"
+            ],
+            "category": "technical",
+            "prompt": "How would you model a one‑to‑many relationship (e.g., a blog and its posts) in MongoDB?",
+            "answer_outline": "Embed posts array if size is bounded, otherwise reference post IDs in a separate collection and use $lookup or manual queries; discuss trade‑offs.",
+            "difficulty": 2,
+            "isCustom": false
+          },
+          {
+            "id": "Q-4",
+            "requirement_ids": [
+              "REQ-4"
+            ],
+            "category": "technical",
+            "prompt": "Write a SQL query to retrieve the top 5 customers by total order amount.",
+            "answer_outline": "SELECT customer_id, SUM(amount) AS total FROM orders GROUP BY customer_id ORDER BY total DESC LIMIT 5;",
+            "difficulty": 2,
+            "isCustom": false
+          },
+          {
+            "id": "Q-5",
+            "requirement_ids": [
+              "REQ-5"
+            ],
+            "category": "technical",
+            "prompt": "Describe how to protect an Express API using JWT authentication.",
+            "answer_outline": "Issue JWT on login, store secret/key, create middleware that extracts token from Authorization header, verify token, attach user info to request, reject unauthorized requests.",
+            "difficulty": 2,
+            "isCustom": false
+          },
+          {
+            "id": "Q-6",
+            "requirement_ids": [
+              "REQ-6"
+            ],
+            "category": "technical",
+            "prompt": "Given an array of integers, write a function to find the longest subarray with sum equal to zero.",
+            "answer_outline": "Use hashmap to store prefix sums and their earliest index; when same sum repeats, compute length; return max length.",
+            "difficulty": 3,
+            "isCustom": false
+          },
+          {
+            "id": "Q-7",
+            "requirement_ids": [
+              "REQ-8"
+            ],
+            "category": "behavioural",
+            "prompt": "Tell us about a time you worked closely with frontend engineers to integrate an API. What challenges did you face and how did you resolve them?",
+            "answer_outline": "Describe communication of contract, handling mismatched data shapes, using versioning or mock servers, iterative testing, and outcome.",
+            "difficulty": 1,
+            "isCustom": false
+          },
+          {
+            "id": "GAP-Q-1",
+            "requirement_ids": [
+              "REQ-7"
+            ],
+            "category": "technical",
+            "prompt": "Describe your process for debugging a failing API endpoint and how you would verify the fix with unit tests.",
+            "answer_outline": "Identify the error (logs, debugger, request tracing); reproduce the issue locally; isolate the problematic code; apply fix; write a unit test that mocks dependencies, invokes the endpoint, and asserts expected response; run the test to confirm pass.",
+            "difficulty": 3,
+            "isCustom": false
+          },
+          {
+            "id": "GAP-Q-2",
+            "requirement_ids": [
+              "REQ-7"
+            ],
+            "category": "technical",
+            "prompt": "How do you design integration tests for an endpoint that depends on external services?",
+            "answer_outline": "Use test doubles or a sandbox environment; set up the external service mock/stub with expected responses; configure the application to use the test instance; send real HTTP requests to the endpoint; assert end‑to‑end behavior and side effects; clean up after test.",
+            "difficulty": 3,
+            "isCustom": false
+          }
+        ],
+        "flashcards": [
+          {
+            "id": "FC-1",
+            "front": "What does async/await simplify compared to traditional callbacks in Node.js?",
+            "back": "It makes asynchronous code look synchronous, eliminates callback nesting, and provides built‑in error handling with try/catch.",
+            "requirement_ids": [
+              "REQ-1"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "FC-2",
+            "front": "Why does middleware order matter in an Express.js application?",
+            "back": "Requests pass through middleware sequentially; ordering determines which middleware runs first, affecting authentication, parsing, and route handling.",
+            "requirement_ids": [
+              "REQ-2"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "FC-3",
+            "front": "How can you efficiently query a MongoDB collection for documents where a field matches any value in a given list?",
+            "back": "Use the $in operator, e.g., db.collection.find({ status: { $in: ['A', 'B', 'C'] } }).",
+            "requirement_ids": [
+              "REQ-3"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "FC-4",
+            "front": "What are the main steps to verify a JWT in an Express route?",
+            "back": "Extract token from Authorization header, verify signature with secret/key, decode payload, check expiration/claims, attach user info to request.",
+            "requirement_ids": [
+              "REQ-5"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "FC-5",
+            "front": "Which data structure is optimal for implementing an LRU cache and why?",
+            "back": "A combination of a doubly linked list and a hash map provides O(1) access and O(1) updates for recent usage ordering.",
+            "requirement_ids": [
+              "REQ-6"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "GAP-FC-1",
+            "front": "What are the essential steps to debug an API endpoint and ensure it has adequate unit/integration test coverage?",
+            "back": "Log/trace the error, reproduce locally, isolate the bug, fix the code, write a unit test mocking dependencies, write an integration test with real or stubbed services, run tests to confirm the fix.",
+            "requirement_ids": [
+              "REQ-7"
+            ],
+            "confidence": 0
+          }
+        ],
+        "schedule": {
+          "days_available": 5,
+          "days": [
+            {
+              "day": 1,
+              "focus": "Core Concepts and Must-Have Requirements",
+              "question_ids": [
+                "Q-1",
+                "Q-5"
+              ],
+              "minutes": 60
+            },
+            {
+              "day": 2,
+              "focus": "Interview Practice and Skill Building - Day 2",
+              "question_ids": [
+                "Q-7",
+                "GAP-Q-1"
+              ],
+              "minutes": 60
+            },
+            {
+              "day": 3,
+              "focus": "Interview Practice and Skill Building - Day 3",
+              "question_ids": [
+                "Q-2",
+                "GAP-Q-2"
+              ],
+              "minutes": 60
+            },
+            {
+              "day": 4,
+              "focus": "Interview Practice and Skill Building - Day 4",
+              "question_ids": [
+                "Q-3",
+                "Q-6"
+              ],
+              "minutes": 60
+            },
+            {
+              "day": 5,
+              "focus": "Revision, Mock Interviews, and Weak Areas",
+              "question_ids": [
+                "Q-4"
+              ],
+              "minutes": 60
+            }
+          ]
+        },
+        "coverage": {
+          "uncovered_requirement_ids": [],
+          "passes": 2
+        }
+      },
+      "error": null
+    },
+    {
+      "id": "case-2",
+      "status": "ok",
+      "kit": {
+        "source": {
+          "company": "fastapi",
+          "company_url": "https://fastapi.tiangolo.com/",
+          "role": "Backend Engineer",
+          "location": "Not specified",
+          "jd_chars": 311,
+          "researched_at": "2026-10-20T11:07:10.900Z",
+          "pages_used": [
+            "https://fastapi.tiangolo.com/",
+            "https://fastapi.tiangolo.com/newsletter",
+            "https://fastapi.tiangolo.com/de",
+            "https://fastapi.tiangolo.com/es",
+            "https://fastapi.tiangolo.com/fr"
+          ]
+        },
+        "company_brief": {
+          "summary": "FastAPI is an open-source, high-performance Python web framework for building APIs, known for its speed, developer productivity, and standards‑based design.",
+          "what_they_do": "They provide a modern framework that leverages Python type hints, Starlette, and Pydantic to enable fast development of production‑ready RESTful services.",
+          "sources": [
+            "https://fastapi.tiangolo.com/",
+            "https://fastapi.tiangolo.com/newsletter",
+            "https://fastapi.tiangolo.com/de",
+            "https://fastapi.tiangolo.com/es",
+            "https://fastapi.tiangolo.com/fr"
+          ]
+        },
+        "role": {
+          "sources": [
+            "https://fastapi.tiangolo.com/",
+            "https://fastapi.tiangolo.com/newsletter",
+            "https://fastapi.tiangolo.com/de",
+            "https://fastapi.tiangolo.com/es",
+            "https://fastapi.tiangolo.com/fr"
+          ],
+          "title": "Backend Engineer",
+          "seniority": "Not specified",
+          "responsibilities": [
+            "Build scalable backend services",
+            "Write unit tests for new and existing code",
+            "Debug production issues",
+            "Improve overall application performance"
+          ],
+          "requirements": [
+            {
+              "id": "REQ-1",
+              "text": "Proficiency in Python programming",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-2",
+              "text": "Experience building APIs with FastAPI",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-3",
+              "text": "Ability to design and implement RESTful APIs",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-4",
+              "text": "Experience with PostgreSQL and database optimization",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-5",
+              "text": "Knowledge of Docker containerization",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-6",
+              "text": "Proficiency with Git version control",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-7",
+              "text": "Ability to write unit and integration tests",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-8",
+              "text": "Understanding of authentication mechanisms for APIs",
+              "kind": "technical",
+              "priority": "must"
+            },
+            {
+              "id": "REQ-9",
+              "text": "Skill in diagnosing and debugging production issues",
+              "kind": "technical",
+              "priority": "must"
+            }
+          ]
+        },
+        "questions": [
+          {
+            "id": "Q-1",
+            "requirement_ids": [
+              "REQ-1"
+            ],
+            "category": "technical",
+            "prompt": "Explain how Python's Global Interpreter Lock (GIL) impacts concurrency in a FastAPI application and how to mitigate it.",
+            "answer_outline": "Discuss GIL limiting true parallel threads, use of async/await, process workers (e.g., Uvicorn workers), or external services.",
+            "difficulty": 2,
+            "isCustom": false
+          },
+          {
+            "id": "Q-2",
+            "requirement_ids": [
+              "REQ-2"
+            ],
+            "category": "technical",
+            "prompt": "Show a FastAPI endpoint that validates a request body using a Pydantic model.",
+            "answer_outline": "Define a BaseModel, use it as a parameter in a @app.post function, FastAPI auto‑validates and returns errors.",
+            "difficulty": 1,
+            "isCustom": false
+          },
+          {
+            "id": "Q-3",
+            "requirement_ids": [
+              "REQ-3"
+            ],
+            "category": "technical",
+            "prompt": "What are the key principles of RESTful API design you would apply when creating new endpoints?",
+            "answer_outline": "Use nouns for resources, proper HTTP verbs, statelessness, appropriate status codes, pagination, versioning, and HATEOAS basics.",
+            "difficulty": 1,
+            "isCustom": false
+          },
+          {
+            "id": "Q-4",
+            "requirement_ids": [
+              "REQ-4"
+            ],
+            "category": "technical",
+            "prompt": "Describe the steps to identify and resolve a slow query in PostgreSQL.",
+            "answer_outline": "Enable pg_stat_statements, examine EXPLAIN ANALYZE, add indexes, rewrite query, consider partitioning or vacuuming.",
+            "difficulty": 2,
+            "isCustom": false
+          },
+          {
+            "id": "Q-5",
+            "requirement_ids": [
+              "REQ-5"
+            ],
+            "category": "technical",
+            "prompt": "Outline a Dockerfile for containerizing a FastAPI application ready for production.",
+            "answer_outline": "Use a lightweight base (python:slim), install dependencies, copy code, expose port, use gunicorn with uvicorn workers, set CMD.",
+            "difficulty": 1,
+            "isCustom": false
+          },
+          {
+            "id": "Q-6",
+            "requirement_ids": [
+              "REQ-7"
+            ],
+            "category": "technical",
+            "prompt": "Write a unit test for a FastAPI GET endpoint using TestClient.",
+            "answer_outline": "Import TestClient, create client = TestClient(app), call client.get('/path'), assert status_code and response JSON.",
+            "difficulty": 1,
+            "isCustom": false
+          },
+          {
+            "id": "Q-7",
+            "requirement_ids": [
+              "REQ-8"
+            ],
+            "category": "technical",
+            "prompt": "Explain how to implement JWT authentication in FastAPI, including token creation and verification.",
+            "answer_outline": "Define token endpoint, use PyJWT to encode payload, create dependency that extracts Authorization header, decode and verify token, raise HTTPException on failure.",
+            "difficulty": 2,
+            "isCustom": false
+          },
+          {
+            "id": "GAP-Q-6-1",
+            "requirement_ids": [
+              "REQ-6"
+            ],
+            "category": "technical",
+            "prompt": "How do you resolve a merge conflict in Git while keeping a clean commit history?",
+            "answer_outline": "Identify conflicted files, edit to resolve, stage changes with `git add`, optionally use `git commit --no-edit` or `git rebase --continue` after an interactive rebase, then push with `--force-with-lease` if needed.",
+            "difficulty": 2,
+            "isCustom": false
+          },
+          {
+            "id": "GAP-Q-9-1",
+            "requirement_ids": [
+              "REQ-9"
+            ],
+            "category": "technical",
+            "prompt": "What steps would you take to diagnose a high‑latency issue in a production web service?",
+            "answer_outline": "Collect recent metrics and logs, check tracing spans, isolate the affected endpoint, reproduce if possible, narrow down to code path, database, or external service, apply a fix, and monitor post‑deployment.",
+            "difficulty": 3,
+            "isCustom": false
+          }
+        ],
+        "flashcards": [
+          {
+            "id": "FC-1",
+            "front": "How does Python's GIL affect concurrency in FastAPI?",
+            "back": "GIL prevents multiple native threads from executing Python bytecode simultaneously; FastAPI relies on async I/O and multiple worker processes to achieve concurrency.",
+            "requirement_ids": [
+              "REQ-1"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "FC-2",
+            "front": "Show a FastAPI endpoint with Pydantic request body validation.",
+            "back": "```python\nclass Item(BaseModel):\n    name: str\n    price: float\n@app.post('/items/')\ndef create_item(item: Item):\n    return item\n```",
+            "requirement_ids": [
+              "REQ-2"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "FC-3",
+            "front": "List three core RESTful design principles.",
+            "back": "1) Use nouns for resources, 2) Use appropriate HTTP methods (GET, POST, PUT, DELETE), 3) Stateless communication with proper status codes.",
+            "requirement_ids": [
+              "REQ-3"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "FC-4",
+            "front": "What PostgreSQL tool helps locate slow queries?",
+            "back": "pg_stat_statements extension combined with EXPLAIN ANALYZE reveals execution plans and timings.",
+            "requirement_ids": [
+              "REQ-4"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "FC-5",
+            "front": "Key steps in a Dockerfile for a FastAPI app.",
+            "back": "1) Choose base image, 2) Install dependencies, 3) Copy source code, 4) Expose port, 5) Set CMD to run gunicorn with uvicorn workers.",
+            "requirement_ids": [
+              "REQ-5"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "GAP-FC-6",
+            "front": "How do you resolve a Git merge conflict while preserving history?",
+            "back": "Edit conflicted files, stage with `git add`, then commit or continue a rebase; optionally squash or rebase to keep history clean.",
+            "requirement_ids": [
+              "REQ-6"
+            ],
+            "confidence": 0
+          },
+          {
+            "id": "GAP-FC-9",
+            "front": "What is your process for debugging a latency problem in production?",
+            "back": "Gather metrics/logs, use tracing to pinpoint hot path, isolate component, reproduce, fix, and verify with monitoring.",
+            "requirement_ids": [
+              "REQ-9"
+            ],
+            "confidence": 0
+          }
+        ],
+        "schedule": {
+          "days_available": 7,
+          "days": [
+            {
+              "day": 1,
+              "focus": "Core Concepts and Must-Have Requirements",
+              "question_ids": [
+                "Q-2",
+                "Q-7"
+              ],
+              "minutes": 60
+            },
+            {
+              "day": 2,
+              "focus": "Interview Practice and Skill Building - Day 2",
+              "question_ids": [
+                "Q-3",
+                "GAP-Q-9-1"
+              ],
+              "minutes": 60
+            },
+            {
+              "day": 3,
+              "focus": "Interview Practice and Skill Building - Day 3",
+              "question_ids": [
+                "Q-5"
+              ],
+              "minutes": 60
+            },
+            {
+              "day": 4,
+              "focus": "Interview Practice and Skill Building - Day 4",
+              "question_ids": [
+                "Q-6"
+              ],
+              "minutes": 60
+            },
+            {
+              "day": 5,
+              "focus": "Interview Practice and Skill Building - Day 5",
+              "question_ids": [
+                "GAP-Q-6-1"
+              ],
+              "minutes": 60
+            },
+            {
+              "day": 6,
+              "focus": "Interview Practice and Skill Building - Day 6",
+              "question_ids": [
+                "Q-1"
+              ],
+              "minutes": 60
+            },
+            {
+              "day": 7,
+              "focus": "Revision, Mock Interviews, and Weak Areas",
+              "question_ids": [
+                "Q-4"
+              ],
+              "minutes": 60
+            }
+          ]
+        },
+        "coverage": {
+          "uncovered_requirement_ids": [],
+          "passes": 2
+        }
+      },
+      "error": null
+    }
+  ]
+}

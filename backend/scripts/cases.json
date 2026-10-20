@@ -1,0 +1,14 @@
+[
+  {
+    "id": "case-1",
+    "jd": "We are looking for a Software Engineer with experience in JavaScript, Node.js, Express.js, REST APIs, MongoDB, SQL, authentication, data structures, algorithms, debugging, and problem solving. Responsibilities include developing backend APIs, designing database schemas, writing clean and maintainable code, fixing bugs, testing endpoints, and collaborating with frontend engineers.",
+    "company_url": "https://www.mongodb.com/",
+    "days": 5
+  },
+  {
+    "id": "case-2",
+    "jd": "We are looking for a Backend Engineer proficient in Python, FastAPI, PostgreSQL, REST API design, Docker, Git, testing, authentication, and database optimization. Responsibilities include building scalable backend services, writing unit tests, debugging production issues, and improving application performance.",
+    "company_url": "https://fastapi.tiangolo.com/",
+    "days": 7
+  }
+]
