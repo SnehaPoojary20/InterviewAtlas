@@ -1,82 +1,22 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { apiFetch } from '../../lib/api';
-import './Login.css';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.DEV ? 'http://localhost:5000/api/v1' : 'https://interviewatlas.onrender.com/api/v1');
 
-export default function Login() {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+export async function apiFetch(endpoint, options = {}) {
+  const token = localStorage.getItem('token');
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
+      ...options.headers,
+    },
+    credentials: 'include', // Sends cookies as fallback
+  });
 
-        try {
-            const data = await apiFetch('/auth/login', {
-                method: 'POST',
-                body: JSON.stringify({ email, password }),
-            });
-
-            // Save JWT token from response data to localStorage for authorization
-            const token = data.data?.token || data.token;
-            if (token) {
-                localStorage.setItem('token', token);
-            }
-
-            // Set auth flag for Navbar
-            localStorage.setItem('isAuthenticated', 'true');
-            navigate('/dashboard');
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="auth-container">
-            <div className="auth-card">
-                <h1 className="auth-title">Sign In</h1>
-                <p className="auth-subtitle">Welcome back to InterviewAtlas</p>
-
-                {error && <div className="error-alert">{error}</div>}
-
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>Email Address</label>
-                        <input
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className="form-control"
-                            placeholder="you@example.com"
-                        />
-                    </div>
-                    <div className="form-group" style={{ marginTop: '1rem' }}>
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="form-control"
-                            placeholder="••••••••"
-                        />
-                    </div>
-                    <button type="submit" disabled={loading} className="submit-btn" style={{ marginTop: '1.5rem' }}>
-                        {loading ? 'Signing in...' : 'Sign In'}
-                    </button>
-                </form>
-
-                <p className="auth-footer-text">
-                    Don't have an account? <Link to="/register" className="auth-link">Register</Link>
-                </p>
-            </div>
-        </div>
-    );
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.message || 'Something went wrong');
+  }
+  return data;
 }

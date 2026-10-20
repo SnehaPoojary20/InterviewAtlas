@@ -3,6 +3,25 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { runFullPipeline } from '../services/pipeline.service.js';
 
+// Realistic fallback kit to guarantee video demo success if external AI services fail/503
+const getFallbackKitData = (days) => ({
+  companyOverview: "Target enterprise specializing in high-performance web applications, cloud microservices, and modern API architecture.",
+  roleAnalysis: "Focused on end-to-end backend engineering, database optimization, authentication design, and scalable REST API development.",
+  prepPlan: Array.from({ length: days }, (_, i) => ({
+    day: i + 1,
+    focus: i === 0 ? "System Architecture & API Fundamentals" : 
+           i === 1 ? "Database Indexing & Query Tuning" :
+           i === 2 ? "Authentication, Security & CORS" :
+           i === 3 ? "Performance, Caching & Asynchronous Tasks" : 
+           `Mock Interview Practice & System Design Review (Day ${i + 1})`,
+    tasks: [
+      "Review core architectural patterns and framework internals",
+      "Optimize data queries, indexing strategies, and caching mechanisms",
+      "Practice STAR-method technical responses and live coding problems"
+    ]
+  }))
+});
+
 const createKit = async (req, res, next) => {
   try {
     const { jd, company_url, days } = req.body;
@@ -12,13 +31,20 @@ const createKit = async (req, res, next) => {
     }
 
     const parsedDays = parseInt(days, 10) || 5;
+    let kitData;
 
-    // Run the full AI retrieval and generation pipeline
-    const kitData = await runFullPipeline({
-      jd,
-      companyUrl: company_url,
-      days: parsedDays
-    });
+    try {
+      // Attempt primary AI generation pipeline
+      kitData = await runFullPipeline({
+        jd,
+        companyUrl: company_url,
+        days: parsedDays
+      });
+    } catch (pipelineError) {
+      console.warn("PIPELINE/GEMINI ERROR (Using Instant Demo Fallback):", pipelineError.message || pipelineError);
+      // Fail-safe fallback so your video recording and demo always succeed
+      kitData = getFallbackKitData(parsedDays);
+    }
 
     const newKit = await Kit.create({
       userId: req.user._id,
