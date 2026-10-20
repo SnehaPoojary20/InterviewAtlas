@@ -4,8 +4,27 @@ import cookieParser from 'cookie-parser';
 
 const app = express();
 
+// Allowed origins for CORS 
+const allowedOrigins = [
+  "http://localhost:5173",
+  /\.vercel\.app$/
+];
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: function (origin, callback) {
+    // Allow non-browser requests (like Postman or server-to-server)
+    if (!origin) return callback(null, true);
+    
+    const isAllowed = allowedOrigins.some(allowed => 
+      allowed instanceof RegExp ? allowed.test(origin) : allowed === origin
+    );
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
