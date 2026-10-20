@@ -3,6 +3,8 @@ import { ApiError } from '../utils/ApiError.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import jwt from 'jsonwebtoken';
 
+
+
 const registerUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -34,7 +36,9 @@ const registerUser = async (req, res, next) => {
             message: error.message || 'Internal Server Error',
         });
     }
-}; // <--- Added missing closing brace and semicolon here!
+};
+
+
 
 const loginUser = async (req, res, next) => {
     try {
@@ -60,10 +64,11 @@ const loginUser = async (req, res, next) => {
 
         const loggedInUser = await User.findById(user._id).select('-password');
 
+        // Configured for cross-domain auth 
         const options = {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            secure: true,           // Required when sameSite is 'none'
+            sameSite: 'none',       // Allows cross-site cookie transmission
             maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
         };
 
@@ -88,11 +93,14 @@ const loginUser = async (req, res, next) => {
     }
 };
 
+
+
 const logoutUser = async (req, res, next) => {
     try {
         const options = {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: true,
+            sameSite: 'none',
         };
         return res
             .status(200)
