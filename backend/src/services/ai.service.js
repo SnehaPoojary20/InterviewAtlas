@@ -61,7 +61,7 @@ const isRetryableError = (error) => {
 };
 
 // ==================================================
-// 2. EMERGENCY FALLBACK KIT (Guarantees Demo Success)
+// 2. EMERGENCY FALLBACK KIT (Guarantees Demo Success & Schema Compliance)
 // ==================================================
 
 const getEmergencyFallbackKit = () => ({
@@ -81,7 +81,7 @@ const getEmergencyFallbackKit = () => ({
     requirements: [
       { id: "req-1", skill: "Backend Architecture", text: "Design scalable RESTful APIs and microservices", priority: "must" },
       { id: "req-2", skill: "Database Management", text: "Optimize relational or NoSQL database schemas and indexing", priority: "must" },
-      { id: "req-3", skill: "Authentication & Security", text: "Implement secure authentication workflows using JWT and cookies", priority: "should" }
+      { id: "req-3", skill: "Authentication & Security", text: "Implement secure authentication workflows using JWT and cookies", priority: "nice" }
     ]
   },
   questions: [
@@ -168,7 +168,7 @@ export const callGeminiWithRetry = async (
       });
 
       if (isQuotaExhausted(error) || [400, 401, 403, 404, 405].includes(status)) {
-        break; // Break out to trigger emergency fallback immediately
+        break; 
       }
 
       if (!isRetryableError(error) || attempt === maxAttempts) {
@@ -202,7 +202,7 @@ const parseJsonSafe = (textResponse) => {
 };
 
 // ==================================================
-// 5. NORMALIZE AND VALIDATE INTERVIEW KIT
+// 5. NORMALIZE AND VALIDATE INTERVIEW KIT (With Priority Mapping)
 // ==================================================
 
 const sanitizeKitData = (data) => {
@@ -230,7 +230,15 @@ const sanitizeKitData = (data) => {
   data.role.requirements = requirements.map((requirement, index) => {
     const r = requirement && typeof requirement === "object" ? requirement : {};
     let priority = String(r.priority || "must").toLowerCase().trim();
-    if (!["must", "should", "nice"].includes(priority)) priority = "must";
+    
+    // Map 'should' to 'must' to satisfy strict database enum constraints ('must', 'nice')
+    if (priority === "should") {
+      priority = "must";
+    }
+
+    if (!["must", "nice"].includes(priority)) {
+      priority = "must";
+    }
 
     return {
       ...r,
