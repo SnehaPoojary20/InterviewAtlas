@@ -1,219 +1,99 @@
-import { GoogleGenAI } from "@google/genai";
-
 // ==================================================
-// 1. GEMINI CONFIGURATION
+// GROQ API CONFIGURATION
 // ==================================================
 
-const apiKey = process.env.GEMINI_API_KEY;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-if (!apiKey) {
-  console.warn("⚠️ GEMINI_API_KEY is missing. AI calls will use emergency fallback mock data.");
-}
-
-const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
-
-// Use gemini-1.5-flash for maximum availability and high rate limits
-const MODEL_NAME = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-
-const sleep = (ms) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
-
-const getErrorStatus = (error) => {
-  if (error?.status != null) {
-    return Number(error.status);
-  }
-
-  if (error?.code != null && Number.isFinite(Number(error.code))) {
-    return Number(error.code);
-  }
-
-  const message = String(error?.message || "");
-  const match = message.match(/"code"\s*:\s*(\d+)/);
-
-  return match ? Number(match[1]) : 0;
-};
-
-const getErrorMessage = (error) =>
-  error?.message || String(error);
-
-const isQuotaExhausted = (error) => {
-  const message = getErrorMessage(error).toLowerCase();
-
-  return (
-    getErrorStatus(error) === 429 &&
-    (
-      message.includes("generate_content_free_tier_requests") ||
-      message.includes("generate_requests_per_day") ||
-      message.includes("quota exceeded") ||
-      message.includes("resource_exhausted")
-    )
-  );
-};
-
-const isRetryableError = (error) => {
-  const status = getErrorStatus(error);
-
-  if (status === 429 && isQuotaExhausted(error)) {
-    return false;
-  }
-
-  return [429, 500, 502, 503, 504].includes(status);
-};
+// Fast, free, and robust Groq LLM model
+const MODEL_NAME = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
 // ==================================================
-// 2. EMERGENCY FALLBACK KIT (Guarantees Demo Success & Schema Compliance)
+// 1. CALL GROQ VIA FETCH
 // ==================================================
 
-const getEmergencyFallbackKit = () => ({
-  company_brief: {
-    summary: "Target enterprise focusing on high-performance web applications, scalable backend microservices, and modern REST API architectures.",
-    culture: "Fast-paced engineering culture emphasizing code quality, automated CI/CD pipelines, and robust system design.",
-    tech_stack: ["Node.js", "Express", "MongoDB", "React", "Docker", "REST APIs"]
-  },
-  role: {
-    title: "Software Engineer",
-    seniority: "Mid / Senior",
-    responsibilities: [
-      "Design, build, and maintain scalable backend services and RESTful APIs",
-      "Optimize database queries, indexing strategies, and caching layers",
-      "Collaborate with cross-functional teams to deliver reliable software solutions"
-    ],
-    requirements: [
-      { id: "req-1", skill: "Backend Architecture", text: "Design scalable RESTful APIs and microservices", priority: "must" },
-      { id: "req-2", skill: "Database Management", text: "Optimize relational or NoSQL database schemas and indexing", priority: "must" },
-      { id: "req-3", skill: "Authentication & Security", text: "Implement secure authentication workflows using JWT and cookies", priority: "nice" }
-    ]
-  },
-  questions: [
-    {
-      id: "q-1",
-      requirement_ids: ["req-1"],
-      question: "How do you handle scaling and error handling in high-traffic REST APIs?",
-      difficulty: 2,
-      expected_answer: "Discuss rate limiting, structured error response middleware, asynchronous request handling, and graceful degradation."
-    },
-    {
-      id: "q-2",
-      requirement_ids: ["req-2"],
-      question: "Explain how MongoDB compound indexing improves read performance.",
-      difficulty: 2,
-      expected_answer: "Explain B-tree index structures, index prefix rules, and how query filters match index field order."
-    },
-    {
-      id: "q-3",
-      requirement_ids: ["req-3"],
-      question: "What are the security implications of storing JWTs in localStorage vs HTTP-Only cookies?",
-      difficulty: 3,
-      expected_answer: "Highlight XSS vulnerabilities with localStorage and how HTTP-Only cookies mitigate token theft."
-    }
-  ],
-  flashcards: [
-    { id: "fc-1", front: "REST Idempotency", back: "An HTTP method is idempotent if making multiple identical requests has the same effect as making a single request (e.g., PUT, DELETE)." },
-    { id: "fc-2", front: "Database Indexing", back: "A data structure (like a B-Tree) that improves the speed of data retrieval operations on a database table." }
-  ]
-});
-
-// ==================================================
-// 3. GENERATE CONTENT WITH SAFE RETRIES
-// ==================================================
-
-export const callGeminiWithRetry = async (
-  prompt,
-  retries = 1,
-  delay = 1000
-) => {
-  if (!ai) {
-    throw new Error("Gemini client not initialized due to missing API key.");
+export const callGroqAPI = async (prompt) => {
+  if (!process.env.GROQ_API_KEY) {
+    throw new Error("GROQ_API_KEY is missing. Add GROQ_API_KEY to your backend environment variables on Render.");
   }
 
   if (typeof prompt !== "string" || !prompt.trim()) {
-    throw new Error("Gemini prompt must be a non-empty string.");
+    throw new Error("Prompt must be a non-empty string.");
   }
 
-  const maxAttempts = Math.max(1, Math.floor(Number(retries) || 1));
-  let lastError;
+  console.log(`Calling Groq API model: ${MODEL_NAME}...`);
 
-  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    try {
-      console.log(`Calling ${MODEL_NAME} (attempt ${attempt}/${maxAttempts})`);
-
-      const response = await ai.models.generateContent({
-        model: MODEL_NAME,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          temperature: 0.3,
-          maxOutputTokens: 8192,
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: MODEL_NAME,
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert technical interviewer and recruiter. You always return strict, valid JSON matching the exact schema provided by the user without any markdown surrounding it.",
         },
-      });
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.2,
+      max_tokens: 8000,
+    }),
+  });
 
-      const text = response.text;
-
-      if (typeof text !== "string" || !text.trim()) {
-        throw new Error("Gemini returned an empty response.");
-      }
-
-      console.log("Gemini response received successfully.");
-      return text.trim();
-    } catch (error) {
-      lastError = error;
-      const status = getErrorStatus(error);
-      const message = getErrorMessage(error);
-
-      console.error("Gemini API request failed:", {
-        model: MODEL_NAME,
-        status,
-        attempt,
-        message,
-      });
-
-      if (isQuotaExhausted(error) || [400, 401, 403, 404, 405].includes(status)) {
-        break; 
-      }
-
-      if (!isRetryableError(error) || attempt === maxAttempts) {
-        break;
-      }
-
-      const waitTime = delay * 2 ** (attempt - 1);
-      console.warn(`Temporary Gemini error. Retrying in ${waitTime}ms.`);
-      await sleep(waitTime);
-    }
+  if (!response.ok) {
+    const errBody = await response.text();
+    console.error("Groq API Error Response:", errBody);
+    throw new Error(`Groq API error (${response.status}): ${errBody}`);
   }
 
-  throw new Error(`Gemini generation failed: ${getErrorMessage(lastError)}`);
+  const data = await response.json();
+  const textContent = data.choices?.[0]?.message?.content;
+
+  if (!textContent) {
+    throw new Error("Groq API returned an empty completion response.");
+  }
+
+  return textContent.trim();
 };
 
 // ==================================================
-// 4. SAFE JSON PARSING
+// 2. SAFE JSON PARSER
 // ==================================================
 
 const parseJsonSafe = (textResponse) => {
-  if (typeof textResponse !== "string" || !textResponse.trim()) {
-    throw new Error("Gemini returned no JSON response.");
-  }
-
   let cleanJson = textResponse.trim()
     .replace(/^```(?:json)?\s*/i, "")
     .replace(/\s*```$/, "")
     .trim();
 
-  return JSON.parse(cleanJson);
+  try {
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    console.error("Failed to parse JSON output from Groq:", error.message);
+    throw new Error("Groq returned malformed JSON structure.");
+  }
 };
 
 // ==================================================
-// 5. NORMALIZE AND VALIDATE INTERVIEW KIT (With Priority Mapping)
+// 3. SANITIZE & MAP DATA TO FRONTEND & DATABASE ENUMS
 // ==================================================
 
 const sanitizeKitData = (data) => {
   if (!data || typeof data !== "object" || Array.isArray(data)) {
-    throw new Error("Gemini returned an invalid interview kit.");
+    throw new Error("Groq output validation failed: invalid JSON root.");
   }
 
   const brief = data.company_brief && typeof data.company_brief === "object" ? data.company_brief : {};
   data.company_brief = {
-    summary: brief.summary || "Company overview unavailable.",
-    culture: brief.culture || "Culture information unavailable.",
+    summary: brief.summary || "Company overview analyzed from site/JD.",
+    culture: brief.culture || "Engineering culture overview.",
+    what_they_do: brief.what_they_do || brief.culture || brief.summary || "Company product focus.",
     tech_stack: Array.isArray(brief.tech_stack) ? brief.tech_stack : [],
   };
 
@@ -230,53 +110,52 @@ const sanitizeKitData = (data) => {
   data.role.requirements = requirements.map((requirement, index) => {
     const r = requirement && typeof requirement === "object" ? requirement : {};
     let priority = String(r.priority || "must").toLowerCase().trim();
-    
-    // Map 'should' to 'must' to satisfy strict database enum constraints ('must', 'nice')
-    if (priority === "should") {
-      priority = "must";
-    }
 
-    if (!["must", "nice"].includes(priority)) {
+    // Map 'should' or anything non-standard to 'must'/'nice' for Mongoose enum compliance
+    if (priority === "should" || !["must", "nice"].includes(priority)) {
       priority = "must";
     }
 
     return {
       ...r,
       id: r.id || `req-${index + 1}`,
-      skill: r.skill || "General",
-      text: r.text || r.description || "Requirement details unavailable.",
+      skill: r.skill || "Core Skill",
+      text: r.text || r.description || "Requirement details.",
       priority,
     };
   });
 
-  const validRequirementIds = new Set(data.role.requirements.map((r) => r.id));
+  const validReqIds = new Set(data.role.requirements.map((r) => r.id));
 
   data.questions = Array.isArray(data.questions)
-    ? data.questions.map((question, index) => {
-        const q = question && typeof question === "object" ? question : {};
-        const parsedDifficulty = Number.parseInt(q.difficulty, 10);
-        const difficulty = Number.isFinite(parsedDifficulty) ? Math.min(Math.max(parsedDifficulty, 1), 3) : 2;
-        const requirementIds = Array.isArray(q.requirement_ids) ? q.requirement_ids.filter((id) => validRequirementIds.has(id)) : [];
+    ? data.questions.map((qItem, index) => {
+        const q = qItem && typeof qItem === "object" ? qItem : {};
+        const parsedDiff = Number.parseInt(q.difficulty, 10);
+        const difficulty = Number.isFinite(parsedDiff) ? Math.min(Math.max(parsedDiff, 1), 3) : 2;
+        const reqIds = Array.isArray(q.requirement_ids) ? q.requirement_ids.filter((id) => validReqIds.has(id)) : [];
+        const outlineText = q.outline || q.expected_answer || "Detailed answer and explanation.";
 
         return {
           ...q,
           id: q.id || `q-${index + 1}`,
-          requirement_ids: requirementIds,
-          question: q.question || "Question unavailable.",
+          type: q.type || "technical",
+          requirement_ids: reqIds,
+          question: q.question || "Interview question.",
           difficulty,
-          expected_answer: q.expected_answer || "Answer guidance unavailable.",
+          outline: outlineText,
+          expected_answer: q.expected_answer || outlineText,
         };
       })
     : [];
 
   data.flashcards = Array.isArray(data.flashcards)
-    ? data.flashcards.map((flashcard, index) => {
-        const fc = flashcard && typeof flashcard === "object" ? flashcard : {};
+    ? data.flashcards.map((fcItem, index) => {
+        const fc = fcItem && typeof fcItem === "object" ? fcItem : {};
         return {
           ...fc,
           id: fc.id || `fc-${index + 1}`,
-          front: fc.front || "Question unavailable.",
-          back: fc.back || "Answer unavailable.",
+          front: fc.front || "Concept",
+          back: fc.back || "Explanation",
         };
       })
     : [];
@@ -285,43 +164,79 @@ const sanitizeKitData = (data) => {
 };
 
 // ==================================================
-// 6. GENERATE THE COMPLETE INTERVIEW KIT (WITH FAIL-SAFE)
+// 4. MAIN PIPELINE EXPORTS
 // ==================================================
 
 export const extractRequirementsAndBrief = async (jd, scrapedText) => {
   if (typeof jd !== "string" || !jd.trim()) {
-    throw new Error("A valid job description is required to create an interview kit.");
+    throw new Error("A valid job description is required to generate the interview kit.");
   }
 
-  try {
-    const websiteText = typeof scrapedText === "string" ? scrapedText.trim() : "";
+  const websiteText = typeof scrapedText === "string" ? scrapedText.trim() : "";
 
-    const prompt = `
-You are an expert technical recruiter and interviewer. Analyze the job description and create a practical interview preparation kit.
-Return *only* a valid JSON object matching this exact schema:
+  const prompt = `
+Analyze the following Job Description and Company Web Text.
+Extract the company brief, role details, technical requirements, real interview questions with detailed outlines/answers, and flashcards.
+
+Return ONLY a single valid JSON object following this exact schema:
+
 {
-  "company_brief": { "summary": "string", "culture": "string", "tech_stack": ["string"] },
-  "role": {
-    "title": "string",
-    "seniority": "string",
-    "responsibilities": ["string"],
-    "requirements": [{ "id": "req-1", "skill": "string", "text": "string", "priority": "must" }]
+  "company_brief": {
+    "summary": "String detailing company summary",
+    "culture": "String detailing company engineering culture",
+    "what_they_do": "String detailing what the company does",
+    "tech_stack": ["Tech 1", "Tech 2"]
   },
-  "questions": [{ "id": "q-1", "requirement_ids": ["req-1"], "question": "string", "difficulty": 2, "expected_answer": "string" }],
-  "flashcards": [{ "id": "fc-1", "front": "string", "back": "string" }]
+  "role": {
+    "title": "Software Engineer",
+    "seniority": "Seniority level",
+    "responsibilities": ["Responsibility 1", "Responsibility 2"],
+    "requirements": [
+      {
+        "id": "req-1",
+        "skill": "Skill Name",
+        "text": "Full requirement description",
+        "priority": "must"
+      }
+    ]
+  },
+  "questions": [
+    {
+      "id": "q-1",
+      "type": "technical",
+      "requirement_ids": ["req-1"],
+      "question": "Realistic interview question",
+      "difficulty": 2,
+      "outline": "Detailed answer outline and solution guidelines",
+      "expected_answer": "Detailed expected answer"
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "fc-1",
+      "front": "Key technical concept or prompt",
+      "back": "Clear concise explanation"
+    }
+  ]
 }
+
+RULES:
+1. "priority" MUST be either "must" or "nice".
+2. "difficulty" MUST be an integer from 1 to 3.
+3. Generate 6 to 10 relevant technical interview questions with thorough answer outlines.
+4. Generate 6 to 10 flashcards.
+5. Base all details on the provided Job Description and Website Text.
 
 JOB DESCRIPTION:
 ${jd}
+
+COMPANY WEBSITE CRAWLED TEXT:
+${websiteText || "No website text available."}
 `;
 
-    const rawText = await callGeminiWithRetry(prompt);
-    const parsedData = parseJsonSafe(rawText);
-    return sanitizeKitData(parsedData);
-  } catch (error) {
-    console.warn("⚠️ AI pipeline failed (503/Quota/Network). Using emergency fallback kit for demo video success:", error.message);
-    return getEmergencyFallbackKit();
-  }
+  const rawJsonString = await callGroqAPI(prompt);
+  const parsedObj = parseJsonSafe(rawJsonString);
+  return sanitizeKitData(parsedObj);
 };
 
 export const generateQuestionsAndFlashcards = async (requirements) => {
@@ -329,22 +244,39 @@ export const generateQuestionsAndFlashcards = async (requirements) => {
     return { questions: [], flashcards: [] };
   }
 
-  try {
-    const prompt = `Generate interview questions and revision flashcards based on these requirements. Return valid JSON only with keys "questions" and "flashcards". REQUIREMENTS: ${JSON.stringify(requirements)}`;
-    const rawText = await callGeminiWithRetry(prompt);
-    const parsed = parseJsonSafe(rawText);
-    const normalized = sanitizeKitData({
-      company_brief: {},
-      role: { requirements },
-      questions: parsed.questions,
-      flashcards: parsed.flashcards,
-    });
-    return { questions: normalized.questions, flashcards: normalized.flashcards };
-  } catch (error) {
-    console.warn("⚠️ Question generation fallback triggered:", error.message);
-    const fallback = getEmergencyFallbackKit();
-    return { questions: fallback.questions, flashcards: fallback.flashcards };
-  }
+  const prompt = `
+Generate interview questions and revision flashcards based on these requirements:
+${JSON.stringify(requirements, null, 2)}
+
+Return ONLY JSON:
+{
+  "questions": [
+    {
+      "id": "q-1",
+      "type": "technical",
+      "requirement_ids": ["req-1"],
+      "question": "Question text",
+      "difficulty": 2,
+      "outline": "Outline text",
+      "expected_answer": "Answer text"
+    }
+  ],
+  "flashcards": [
+    { "id": "fc-1", "front": "Concept", "back": "Explanation" }
+  ]
+}
+`;
+
+  const rawJsonString = await callGroqAPI(prompt);
+  const parsedObj = parseJsonSafe(rawJsonString);
+  const normalized = sanitizeKitData({
+    company_brief: {},
+    role: { requirements },
+    questions: parsedObj.questions,
+    flashcards: parsedObj.flashcards,
+  });
+
+  return { questions: normalized.questions, flashcards: normalized.flashcards };
 };
 
 export const generateGapQuestions = async (uncoveredReqs) => {
