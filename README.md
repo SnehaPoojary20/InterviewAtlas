@@ -4,6 +4,8 @@ InterviewAtlas is a full-stack web application that transforms a job description
 
 The goal is to help candidates prepare more efficiently by identifying what a role requires, organizing relevant practice material, and allocating preparation time according to the interview timeline.
 
+Live:https://interview-atlas-rho.vercel.app/dashboard
+
 ## Table of Contents
 
 - [Features](#features)
